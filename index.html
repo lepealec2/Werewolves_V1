@@ -72,6 +72,9 @@ padding:10px;
 background:white;
 border-radius:8px;
 }
+html, body {
+    touch-action: manipulation;
+}
 </style>
 
 </head>
@@ -93,6 +96,7 @@ border-radius:8px;
 <label><input type="checkbox" checked onchange="toggleColumn(1)">Name</label>
 <label><input type="checkbox" checked onchange="toggleColumn(2)">Alive</label>
 <label><input type="checkbox" checked onchange="toggleColumn(3)">Role</label>
+<br>
 <label><input type="checkbox" checked onchange="toggleColumn(4)">Ghost Vote</label>
 <label><input type="checkbox" checked onchange="toggleColumn(5)">Status</label>
 <label><input type="checkbox" checked onchange="toggleColumn(6)">Remove</label>
