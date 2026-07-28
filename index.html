@@ -122,6 +122,11 @@ border-radius:8px;
 <button onclick="randomizeTarget()">🎲 Randomize Target</button>
 
 <div id="result"></div>
+<button onclick="clearAttack()">🧹 Clear Attack</button>
+
+<br>
+<div id="voteInfo"></div>
+<br>
 
 <br>
 <div id="winnerResult"></div>
@@ -149,7 +154,7 @@ If the target is protected, the attack fails.<br><br>
 
 3️⃣ 🔮 <b>Seer Investigation</b><br>
 The seer investigates a player and receives information: yes or no if they are a non-villager.<br> <br>
-If the seer is killed and not protected, they receive no investigation result that night. <br> <br>
+If the seer is killed and not protected, they receive no investigation result that night. <br> <Br>
 
 </div>
 
@@ -178,6 +183,29 @@ If the seer is killed and not protected, they receive no investigation result th
 
 let playerCount=0;
 
+let attackLocked = false;
+let attackSeed = 0;
+
+function showWerewolfAttack(chosen){
+
+    if(attackLocked) return;
+
+    attackLocked = true;
+    attackSeed++;
+
+    document.getElementById("result").innerHTML =
+        "💀 Werewolves attack: <b>" + chosen + "</b>";
+}
+
+function clearAttack(){
+
+    document.getElementById("result").innerHTML = "";
+
+    // allow a new attack
+    attackLocked = false;
+
+    console.log("Attack cleared. Next seed:", attackSeed + 1);
+}
 
 function addPlayer(){
 
@@ -211,7 +239,7 @@ row.innerHTML=`
 
 <td>
 <label>
-<input type="radio" name="ghostVote1" value="Yes"> Yes
+<input type="checkbox"> Voted
 </label>
 </td>
 
@@ -298,22 +326,29 @@ rows[i].cells[column].style.display==="none"?"":"none";
 
 }
 
-
-
 function randomizeTarget(){
 
 let targets=[];
 
 document.querySelectorAll("#playerTable tbody tr").forEach(row=>{
 
-let checks=row.querySelectorAll("input[type=checkbox]");
+let alive=row.cells[2].querySelector("button").innerHTML.includes("Alive");
 
-if(checks[0] && checks[0].checked){
+if(!alive) return;
 
-let name=row.querySelector("input[type=text]").value;
 
-if(name.trim()=="")
+// Status column
+let checkboxes=row.cells[5].querySelectorAll("input[type=checkbox]");
+
+
+// 🎯 Targeted checkbox
+if(checkboxes[0] && checkboxes[0].checked){
+
+let name=row.cells[1].querySelector("input").value;
+
+if(name.trim()==""){
 name="Player "+row.cells[0].innerText;
+}
 
 targets.push(name);
 
@@ -322,10 +357,11 @@ targets.push(name);
 });
 
 
-if(targets.length<2){
+
+if(targets.length===0){
 
 document.getElementById("result").innerHTML=
-"🎯 Need 2+ targeted players";
+"🌙 No target selected";
 
 return;
 
@@ -334,13 +370,11 @@ return;
 
 let chosen=targets[Math.floor(Math.random()*targets.length)];
 
+
 document.getElementById("result").innerHTML=
-"💀 Random Target: <b>"+chosen+"</b>";
+"💀 Werewolves attack: <b>"+chosen+"</b>";
 
 }
-
-
-
 function toggleRecommendedSettings(){
 
 let box=document.getElementById("recommendedSettings");
@@ -369,7 +403,7 @@ return;
 }
 
 
-let werewolves;
+let werewolves=1;
 let seers=0;
 let soldiers=0;
 function randomBetween(min,max){
@@ -386,14 +420,10 @@ if(players>=6 && players<=7){
 
 }
 else if(players>=8 && players<=11){
-
     werewolves=randomBetween(2,3);
-
 }
 else if(players>=12 && players<=15){
-
     werewolves=randomBetween(3,4);
-
 }
 else if(players>=16){
 
@@ -405,30 +435,25 @@ else if(players>=16){
 
 let specialRoles=0;
 
-if(players<=7){
+if(players<=5){
     specialRoles=1;
 }
-else if(players<=11){
-    specialRoles=Math.random()<0.5 ? 1 : 2;
+else if(players>=6 && players<=7){
+    specialRoles=randomBetween(1,2);
 }
-else if(players<=15){
-    specialRoles=Math.random()<0.5 ? 2 : 3;
+else if(players>=8 && players<=11){
+    specialRoles=randomBetween(2,3);
 }
 else{
     specialRoles=3+Math.floor((players-16)/5);
 }
-
-
 for(let i=0;i<specialRoles;i++){
-
 if(Math.random()<0.5){
     seers++;
 }else{
     soldiers++;
 }
-
 }
-
 
 
 // Create roles
@@ -488,30 +513,23 @@ checkWinner();
 function checkWinner(){
 
 let werewolves=0;
-
 let town=0;
-
+let aliveCount=0;
 
 document.querySelectorAll("#playerTable tbody tr").forEach(row=>{
 
-
 let aliveButton=row.cells[2].querySelector("button");
-
 
 if(aliveButton.innerHTML.includes("Alive")){
 
+aliveCount++;
 
 let role=row.cells[3].querySelector("select").value;
 
-
 if(role=="Werewolf"){
-
 werewolves++;
-
 }else{
-
 town++;
-
 }
 
 }
@@ -519,24 +537,24 @@ town++;
 });
 
 
+// 🧮 Calculate votes needed (>= 50%)
+let votesNeeded = Math.ceil(aliveCount / 2);
 
+
+// 🟢 Show vote info
+document.getElementById("voteInfo").innerHTML =
+"👥 Living Players: <b>"+aliveCount+"</b> | 🗳️ Votes Needed: <b>"+votesNeeded+"</b> (≥50%)";
+
+
+// 🏆 Winner logic
 let result="";
 
-
 if(werewolves==0 && town>0){
-
-result=
-"🏘️ Town Victory!<br>All Werewolves eliminated.";
-
+result="🏘️ Town Victory!<br>All Werewolves eliminated.";
 }
-
 else if(werewolves>=town && werewolves>0){
-
-result=
-"🐺 Werewolf Victory!<br>Werewolves equal or outnumber Town.";
-
+result="🐺 Werewolf Victory!<br>Werewolves equal or outnumber Town.";
 }
-
 
 document.getElementById("winnerResult").innerHTML=result;
 
