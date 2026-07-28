@@ -561,7 +561,12 @@ result="🐺 Werewolf Victory!<br>Werewolves equal or outnumber Town.";
 document.getElementById("winnerResult").innerHTML=result;
 
 }
-
+// Add 4 default players on startup
+window.onload = function(){
+    for(let i = 0; i < 4; i++){
+        addPlayer();
+    }
+};
 </script>
 
 </body>
