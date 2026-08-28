@@ -205,9 +205,24 @@ function showWerewolfAttack(chosen){
 
 function clearAttack(){
 
+    // Clear attack result
     document.getElementById("result").innerHTML = "";
 
-    // allow a new attack
+    // Clear 🐺 target checkbox for every player
+    document.querySelectorAll("#playerTable tbody tr").forEach(row => {
+
+        let checkboxes = row.cells[5].querySelectorAll(
+            'input[type="checkbox"]'
+        );
+
+        // First status checkbox = 🐺 target
+        if(checkboxes[0]){
+            checkboxes[0].checked = false;
+        }
+
+    });
+
+    // Allow a new attack
     attackLocked = false;
 
     console.log("Attack cleared. Next seed:", attackSeed + 1);
